@@ -10,6 +10,9 @@ newtype Structure = Structure String
 instance Semigroup Structure where
   (<>) x y = Structure $ getStructureContent x <> getStructureContent y
 
+instance Monoid Structure where
+  mempty = Structure ""
+
 type Title = String
 
 getStructureContent :: Structure -> String

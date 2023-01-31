@@ -1,12 +1,13 @@
-module Markup (Document, Structure (..)) where
+module Markup (Document, Structure (..), HeadingLevel (..), parse) where
 
 import Data.Maybe (maybeToList)
-import Numeric.Natural (Natural)
 
 type Document = [Structure]
 
+data HeadingLevel = H1 | H2 | H3 deriving (Eq, Show)
+
 data Structure
-  = Heading Natural String
+  = Heading HeadingLevel String
   | Paragraph String
   | UnorderedList [String]
   deriving (Eq, Show)
@@ -24,17 +25,18 @@ data Structure
 parse :: String -> Document
 parse = parseLines Nothing . lines
 
+-- Recursion with state
 parseLines :: Maybe Structure -> [String] -> Document
 parseLines context txts =
   case txts of
     [] -> maybeToList context
     -- headings
     ('#' : ' ' : line) : rest ->
-      maybe id (:) context (Heading 1 (trim line) : parseLines Nothing rest)
+      maybe id (:) context (Heading H1 (trim line) : parseLines Nothing rest)
     ('#' : '#' : ' ' : line) : rest ->
-      maybe id (:) context (Heading 2 (trim line) : parseLines Nothing rest)
+      maybe id (:) context (Heading H2 (trim line) : parseLines Nothing rest)
     ('#' : '#' : '#' : ' ' : line) : rest ->
-      maybe id (:) context (Heading 3 (trim line) : parseLines Nothing rest)
+      maybe id (:) context (Heading H3 (trim line) : parseLines Nothing rest)
     -- unordered list
     ('-' : ' ' : line) : rest ->
       if trim line == ""
