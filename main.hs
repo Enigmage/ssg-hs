@@ -14,7 +14,18 @@ import System.FilePath.Posix (takeBaseName)
 filePath :: String
 filePath = "./example.md"
 
+resultFilePath :: String
+resultFilePath = "./example.html"
+
+-- main :: IO ()
+-- main = do
+--   txt <- readFile filePath
+--   (putStrLn . render) (mdToHTML (takeBaseName filePath) (parse txt))
+
+-- Without do
 main :: IO ()
-main = do
-  txt <- readFile filePath
-  (putStrLn . render) (mdToHTML (takeBaseName filePath) (parse txt))
+main =
+  readFile filePath
+    >>= \txt ->
+      -- could be writtien in point-free style as well by omitting \txt
+      writeFile resultFilePath $ render $ mdToHTML (takeBaseName filePath) (parse txt)
