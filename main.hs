@@ -8,20 +8,18 @@ import System.Directory (doesFileExist)
 import System.Environment (getArgs)
 import System.FilePath.Posix (takeBaseName)
 
-process :: Title -> String -> String
-process title = render . mdToHTML title . parse
+processFileContent :: Title -> String -> String
+processFileContent title = render . mdToHTML title . parse
 
 main :: IO ()
 main =
   getArgs
     >>= \case
       [inputPath, outputPath] -> do
-        txt <- readFile inputPath
+        fileContent <- readFile inputPath
         exists <- doesFileExist outputPath
-        let writeResult = writeFile outputPath (process (takeBaseName outputPath) txt)
-        if not exists
-          then writeResult
-          else whenIO confirm writeResult
+        let writeResult = writeFile outputPath (processFileContent (takeBaseName outputPath) fileContent)
+        if not exists then writeResult else whenIO confirm writeResult
       _ -> putStrLn "Usage: ssg-hs <input file path> <output file path>"
 
 -- * > chain IO without passing value
