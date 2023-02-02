@@ -1,7 +1,6 @@
-module Html.Internal where
+module Lib.Html.Internal where
 
 -- import Debug.Trace (traceShowId)
-import Text.Read (Lexeme (String))
 
 newtype Html = Html String
 

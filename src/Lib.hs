@@ -1,9 +1,11 @@
 {-# LANGUAGE LambdaCase #-}
 
+module Lib (main) where
+
 import Control.Monad (when)
-import Convert (mdToHTML)
-import Html (Title, render)
-import Markup (parse)
+import Lib.Convert (mdToHTML)
+import Lib.Html (Title, render)
+import Lib.Markup (parse)
 import System.Directory (doesFileExist)
 import System.Environment (getArgs)
 import System.FilePath.Posix (takeBaseName)

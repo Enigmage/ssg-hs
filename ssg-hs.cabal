@@ -1,0 +1,54 @@
+cabal-version:       2.4
+
+name:                ssg-hs
+version:             0.1.0.0
+synopsis:            Static site generator
+description:         This package provides a static site generator
+                     from a custom markup format to HTML.
+                     It defines a parser for this custom markup format
+                     as well as an html pretty printer EDSL.
+
+homepage:            https://github.com/Enigmage/ssg-hs
+bug-reports:         https://github.com/Enigmage/ssg-hs/issues
+license:             BSD-3-Clause
+license-file:        LICENSE.txt
+author:              Ali Zaidi
+maintainer:          alizaidi9@duck.com
+category:            Learning, Web
+extra-doc-files:
+  README.md
+
+common common-settings
+  default-language: Haskell2010
+  ghc-options:
+    -Wall
+
+library
+  import: common-settings
+  build-depends:
+      base
+    , directory
+    , filepath
+  hs-source-dirs:
+      src
+  exposed-modules:
+      Lib
+        Lib.Convert
+        Lib.Html
+          Lib.Html.Internal
+        Lib.Markup
+  default-extensions:
+      OverloadedStrings
+      DeriveGeneric
+      DeriveAnyClass
+      ImportQualifiedPost
+
+executable ssghs
+  import: common-settings
+  hs-source-dirs: app
+  main-is: Main.hs
+  build-depends:
+      base
+    , ssg-hs
+  ghc-options:
+    -O

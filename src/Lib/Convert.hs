@@ -1,7 +1,7 @@
-module Convert (mdToHTML) where
+module Lib.Convert (mdToHTML) where
 
-import Html.Internal qualified as H
-import Markup qualified as M
+import Lib.Html.Internal qualified as H
+import Lib.Markup qualified as M
 
 mdToHTML :: H.Title -> M.Document -> H.Html
 mdToHTML title doc = H.html_ title (foldMap convertMarkup doc)

@@ -1,4 +1,4 @@
-module Markup (Document, Structure (..), HeadingLevel (..), parse) where
+module Lib.Markup (Document, Structure (..), HeadingLevel (..), parse) where
 
 import Data.Maybe (maybeToList)
 
