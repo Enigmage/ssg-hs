@@ -22,6 +22,12 @@ common common-settings
   default-language: Haskell2010
   ghc-options:
     -Wall
+  default-extensions:
+      OverloadedStrings
+      DeriveGeneric
+      DeriveAnyClass
+      ImportQualifiedPost
+      LambdaCase
 
 library
   import: common-settings
@@ -37,18 +43,16 @@ library
         Lib.Html
           Lib.Html.Internal
         Lib.Markup
-  default-extensions:
-      OverloadedStrings
-      DeriveGeneric
-      DeriveAnyClass
-      ImportQualifiedPost
 
 executable ssghs
   import: common-settings
   hs-source-dirs: app
   main-is: Main.hs
+  other-modules: 
+    OptParse
   build-depends:
       base
+    , optparse-applicative
     , ssg-hs
   ghc-options:
     -O
