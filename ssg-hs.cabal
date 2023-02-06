@@ -33,8 +33,6 @@ library
   import: common-settings
   build-depends:
       base
-    , directory
-    , filepath
   hs-source-dirs:
       src
   exposed-modules:
@@ -52,6 +50,8 @@ executable ssghs
     OptParse
   build-depends:
       base
+    , directory
+    , filepath
     , optparse-applicative
     , ssg-hs
   ghc-options:
