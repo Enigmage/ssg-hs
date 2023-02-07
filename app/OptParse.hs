@@ -27,53 +27,14 @@ data SingleOutput
 parse :: IO Options
 parse = execParser opts
 
--- pSingleOptions :: Parser Options
--- pSingleOptions = liftA2 ConvertSingle pInputFile pOutputFile
-pSingleOption :: Parser Options
-pSingleOption = ConvertSingle <$> singleInput <*> singleOutput
-  where
-    singleInput = fromMaybe Stdin <$> optional pInputFile
-    singleOutput = fromMaybe Stdout <$> optional pOutputFile
-
-pDirectoryOption :: Parser Options
-pDirectoryOption = ConvertDir <$> pInputDir <*> pOutputDir
-  where
-    pInputDir =
-      strOption
-        ( long "input"
-            <> short 'i'
-            <> metavar "DIRECTORY"
-            <> help "Input directory path"
-        )
-    pOutputDir =
-      strOption
-        ( long "output"
-            <> short 'o'
-            <> metavar "DIRECTORY"
-            <> help "Output directory path"
-        )
-
-pInputFile :: Parser SingleInput
-pInputFile = InputFile <$> parser
-  where
-    parser =
-      strOption
-        ( long "input"
-            <> short 'i'
-            <> metavar "FILE"
-            <> help "Input file path"
-        )
-
-pOutputFile :: Parser SingleOutput
-pOutputFile = OutputFile <$> parser
-  where
-    parser =
-      strOption
-        ( long "output"
-            <> short 'o'
-            <> metavar "FILE"
-            <> help "Output file path"
-        )
+opts :: ParserInfo Options
+opts =
+  info
+    (helper <*> pOptions)
+    ( fullDesc
+        <> header "ssghs - a static site generator"
+        <> progDesc "convert markup to HTML"
+    )
 
 pOptions :: Parser Options
 pOptions =
@@ -92,11 +53,42 @@ pOptions =
           )
     )
 
-opts :: ParserInfo Options
-opts =
-  info
-    (helper <*> pOptions)
-    ( fullDesc
-        <> header "ssghs - a static site generator"
-        <> progDesc "convert markup to HTML"
-    )
+pSingleOption :: Parser Options
+pSingleOption = ConvertSingle <$> singleInput <*> singleOutput
+  where
+    singleInput = fromMaybe Stdin <$> optional inputFile
+    singleOutput = fromMaybe Stdout <$> optional outputFile
+    inputFile =
+      InputFile
+        <$> strOption
+          ( long "input"
+              <> short 'i'
+              <> metavar "FILE"
+              <> help "Input file path"
+          )
+    outputFile =
+      OutputFile
+        <$> strOption
+          ( long "output"
+              <> short 'o'
+              <> metavar "FILE"
+              <> help "Output file path"
+          )
+
+pDirectoryOption :: Parser Options
+pDirectoryOption = ConvertDir <$> pInputDir <*> pOutputDir
+  where
+    pInputDir =
+      strOption
+        ( long "input"
+            <> short 'i'
+            <> metavar "DIRECTORY"
+            <> help "Input directory path"
+        )
+    pOutputDir =
+      strOption
+        ( long "output"
+            <> short 'o'
+            <> metavar "DIRECTORY"
+            <> help "Output directory path"
+        )

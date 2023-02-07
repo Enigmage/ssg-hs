@@ -11,8 +11,8 @@ convertMarkup markup =
   case markup of
     M.Heading n txt ->
       case n of
-        M.H1 -> H.h1_ txt
-        M.H2 -> H.h2_ txt
-        M.H3 -> H.h3_ txt
-    M.Paragraph txt -> H.p_ txt
+        M.H1 -> H.h1_ (H.txt_ txt)
+        M.H2 -> H.h2_ (H.txt_ txt)
+        M.H3 -> H.h3_ (H.txt_ txt)
+    M.Paragraph txt -> H.p_ (H.txt_ txt)
     M.UnorderedList list -> H.ul_ (map H.Structure list)
