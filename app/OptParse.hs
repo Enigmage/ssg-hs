@@ -76,16 +76,16 @@ pSingleOption = ConvertSingle <$> singleInput <*> singleOutput
           )
 
 pDirectoryOption :: Parser Options
-pDirectoryOption = ConvertDir <$> pInputDir <*> pOutputDir
+pDirectoryOption = ConvertDir <$> inputDir <*> outputDir
   where
-    pInputDir =
+    inputDir =
       strOption
         ( long "input"
             <> short 'i'
             <> metavar "DIRECTORY"
             <> help "Input directory path"
         )
-    pOutputDir =
+    outputDir =
       strOption
         ( long "output"
             <> short 'o'

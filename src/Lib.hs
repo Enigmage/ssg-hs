@@ -1,4 +1,4 @@
-module Lib (processSingle, processDir) where
+module Lib (processSingle) where
 
 import Lib.Convert (markupToHtml)
 import Lib.Html (Title, render)
@@ -11,6 +11,3 @@ processFileContent title = render . markupToHtml title . parse
 processSingle :: Title -> Handle -> Handle -> IO ()
 processSingle title inp out =
   hGetContents inp >>= hPutStrLn out . processFileContent title
-
-processDir :: FilePath -> FilePath -> IO ()
-processDir = undefined

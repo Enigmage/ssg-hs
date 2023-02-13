@@ -1,4 +1,4 @@
-module Lib.Convert (markupToHtml) where
+module Lib.Convert (markupToHtml, convertMarkup) where
 
 import Lib.Html.Internal qualified as H
 import Lib.Markup qualified as M
@@ -16,3 +16,4 @@ convertMarkup markup =
         M.H3 -> H.h3_ (H.txt_ txt)
     M.Paragraph txt -> H.p_ (H.txt_ txt)
     M.UnorderedList list -> H.ul_ (map H.Structure list)
+

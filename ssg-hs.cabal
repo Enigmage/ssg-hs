@@ -33,6 +33,8 @@ library
   import: common-settings
   build-depends:
       base
+      , directory
+      , filepath
   hs-source-dirs:
       src
   exposed-modules:
