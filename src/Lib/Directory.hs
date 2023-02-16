@@ -3,6 +3,7 @@ module Lib.Directory (buildIndex, convertDirectory) where
 import Control.Exception (Exception (displayException), SomeException (..), catch)
 import Control.Monad (void, when)
 import Data.Bifunctor qualified
+import Data.Functor (($>))
 import Data.List (partition)
 import Lib.Convert (convertMarkup, markupToHtml)
 import Lib.Html.Internal qualified as H
@@ -62,7 +63,7 @@ getDirFilesAndContent inputDir = do
   pure $ DirContents {filesToProcess = markupContent, filesToCopy = otherFiles}
 
 applyIoOnList :: (a -> IO b) -> [a] -> IO [(a, Either String b)]
-applyIoOnList operation = do
+applyIoOnList operation =
   traverse
     ( \input -> do
         maybeResult <-
@@ -78,9 +79,7 @@ filterAndReportFailures =
     \(fname, fc) ->
       case fc of
         Right content -> pure [(fname, content)]
-        Left err -> do
-          hPutStrLn stderr err
-          pure []
+        Left err -> hPutStrLn stderr err $> [] -- $> perform error-report effect then lift [] to IO (f a -> b -> f b)
 
 copyFiles :: FilePath -> [FilePath] -> IO ()
 copyFiles outDir files = void $ applyIoOnList copyFromTo files >>= filterAndReportFailures
@@ -106,20 +105,20 @@ convertFileContent :: (FilePath, M.Document) -> (FilePath, H.Html)
 convertFileContent (fPath, fContent) = (fPath, markupToHtml (takeBaseName fPath) fContent)
 
 createDirOrExit :: FilePath -> IO ()
-createDirOrExit fp =
+createDirOrExit fPath =
   Utils.whenIO
-    (not <$> createOutputDirectory fp)
+    (not <$> createOutputDirectory fPath)
     (hPutStrLn stderr "Cancelled" *> exitFailure)
 
 createOutputDirectory :: FilePath -> IO Bool
-createOutputDirectory dir = do
-  dirExists <- doesDirectoryExist dir
+createOutputDirectory outputDir = do
+  dirExists <- doesDirectoryExist outputDir
   create <-
     if dirExists
       then do
         overwrite <- Utils.confirm "Directory alread exists. Overwrite ? y/n"
-        when overwrite (removeDirectoryRecursive dir)
+        when overwrite (removeDirectoryRecursive outputDir)
         pure overwrite
       else pure True
-  when create (createDirectory dir)
+  when create (createDirectory outputDir)
   pure create

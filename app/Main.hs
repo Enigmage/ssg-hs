@@ -12,27 +12,27 @@ main :: IO ()
 main =
   Op.parse >>= \case
     Op.ConvertDir input output -> Lib.convertDirectory input output
-    Op.ConvertSingle input output ->
-      let withInputHandle :: (String -> Handle -> IO a) -> IO a
-          withInputHandle action =
-            case input of
-              Op.Stdin ->
-                action "" stdin
-              Op.InputFile file ->
-                withFile file ReadMode (action (takeBaseName file))
+    Op.ConvertSingle input output -> withInputHandle (\title inp -> withOutputHandle $ Lib.convertSingle title inp)
+      where
+        withInputHandle :: (String -> Handle -> IO a) -> IO a
+        withInputHandle action =
+          case input of
+            Op.Stdin ->
+              action "" stdin
+            Op.InputFile file ->
+              withFile file ReadMode (action (takeBaseName file))
 
-          withOutputHandle :: (Handle -> IO a) -> IO a
-          withOutputHandle action =
-            case output of
-              Op.Stdout ->
-                action stdout
-              Op.OutputFile file -> do
-                exists <- doesFileExist file
-                shouldOpenFile <-
-                  if exists
-                    then Utils.confirm "File already exists. Overwrite? y/n"
-                    else pure True
-                if shouldOpenFile
-                  then withFile file WriteMode action
-                  else exitFailure
-       in withInputHandle (\title inp -> withOutputHandle $ Lib.convertSingle title inp)
+        withOutputHandle :: (Handle -> IO a) -> IO a
+        withOutputHandle action =
+          case output of
+            Op.Stdout ->
+              action stdout
+            Op.OutputFile file -> do
+              exists <- doesFileExist file
+              shouldOpenFile <-
+                if exists
+                  then Utils.confirm "File already exists. Overwrite? y/n"
+                  else pure True
+              if shouldOpenFile
+                then withFile file WriteMode action
+                else exitFailure
