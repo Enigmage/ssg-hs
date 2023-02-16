@@ -62,18 +62,15 @@ getDirFilesAndContent inputDir = do
   pure $ DirContents {filesToProcess = markupContent, filesToCopy = otherFiles}
 
 applyIoOnList :: (a -> IO b) -> [a] -> IO [(a, Either String b)]
-applyIoOnList operation list = do
+applyIoOnList operation = do
   traverse
     ( \input -> do
         maybeResult <-
           catch
             (Right <$> operation input)
-            ( \(SomeException e) -> do
-                pure $ Left (displayException e)
-            )
+            (\(SomeException e) -> (pure . Left) $ displayException e)
         pure (input, maybeResult)
     )
-    list
 
 filterAndReportFailures :: [(a, Either String b)] -> IO [(a, b)]
 filterAndReportFailures =
@@ -96,17 +93,17 @@ writeFiles outDir files = do
   void $ applyIoOnList writeFileContent files >>= filterAndReportFailures
 
 markupToRenderedHtml :: [(FilePath, String)] -> [(FilePath, String)]
-markupToRenderedHtml list = map (Data.Bifunctor.second H.render) (index : htmlFiles)
+markupToRenderedHtml files = map (Data.Bifunctor.second H.render) (index : htmlFiles)
   where
-    parsedFiles = parseDirFiles list
-    htmlFiles = convertFiles parsedFiles
+    parsedFiles = map parseFileContent files
+    htmlFiles = map convertFileContent parsedFiles
     index = ("index.html", buildIndex parsedFiles)
 
-parseDirFiles :: [(FilePath, String)] -> [(FilePath, M.Document)]
-parseDirFiles = map (\(fp, fc) -> (takeBaseName fp <.> "html", M.parse fc))
+parseFileContent :: (FilePath, String) -> (FilePath, M.Document)
+parseFileContent (fPath, fContent) = (takeBaseName fPath <.> "html", M.parse fContent)
 
-convertFiles :: [(FilePath, M.Document)] -> [(FilePath, H.Html)]
-convertFiles = map (\(fp, fc) -> (fp, markupToHtml (takeBaseName fp) fc))
+convertFileContent :: (FilePath, M.Document) -> (FilePath, H.Html)
+convertFileContent (fPath, fContent) = (fPath, markupToHtml (takeBaseName fPath) fContent)
 
 createDirOrExit :: FilePath -> IO ()
 createDirOrExit fp =
@@ -120,9 +117,9 @@ createOutputDirectory dir = do
   create <-
     if dirExists
       then do
-        override <- Utils.confirm "Directory alread exists. Overwrite ? y/n"
-        when override (removeDirectoryRecursive dir)
-        pure override
+        overwrite <- Utils.confirm "Directory alread exists. Overwrite ? y/n"
+        when overwrite (removeDirectoryRecursive dir)
+        pure overwrite
       else pure True
   when create (createDirectory dir)
   pure create
