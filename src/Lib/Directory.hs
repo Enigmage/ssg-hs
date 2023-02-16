@@ -21,11 +21,11 @@ data DirContents = DirContents
 
 convertDirectory :: FilePath -> FilePath -> IO ()
 convertDirectory inputDir outputDir = do
-  DirContents filesToProcess filesToCopy <- getDirFilesAndContent inputDir
+  DirContents markupFiles staticFiles <- getDirFilesAndContent inputDir
   createDirOrExit outputDir
-  let outputHtmls = markupToRenderedHtml filesToProcess
-  copyFiles outputDir filesToCopy
-  writeFiles outputDir outputHtmls
+  let htmlFiles = markupToRenderedHtml markupFiles
+  copyFiles outputDir staticFiles
+  writeFiles outputDir htmlFiles
   putStrLn "Done"
 
 buildIndex :: [(FilePath, M.Document)] -> H.Html
@@ -83,14 +83,14 @@ filterAndReportFailures =
           pure []
 
 copyFiles :: FilePath -> [FilePath] -> IO ()
-copyFiles outDir files = do
-  let copyFromTo file = copyFile file (outDir </> takeFileName file)
-  void $ applyIoOnList copyFromTo files >>= filterAndReportFailures
+copyFiles outDir files = void $ applyIoOnList copyFromTo files >>= filterAndReportFailures
+  where
+    copyFromTo file = copyFile file (outDir </> takeFileName file)
 
 writeFiles :: FilePath -> [(FilePath, String)] -> IO ()
-writeFiles outDir files = do
-  let writeFileContent (file, content) = writeFile (outDir </> file) content
-  void $ applyIoOnList writeFileContent files >>= filterAndReportFailures
+writeFiles outDir files = void $ applyIoOnList writeFileContent files >>= filterAndReportFailures
+  where
+    writeFileContent (file, content) = writeFile (outDir </> file) content
 
 markupToRenderedHtml :: [(FilePath, String)] -> [(FilePath, String)]
 markupToRenderedHtml files = map (Data.Bifunctor.second H.render) (index : htmlFiles)
