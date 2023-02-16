@@ -29,16 +29,16 @@ html_ :: Title -> Structure -> Html
 html_ title content = Html . el "html" $ el "head" (el "title" $ escape title) <> el "body" (getStructureContent content)
 
 h1_ :: Content -> Structure
-h1_ = Structure . el "h1" . escape . getContentString
+h1_ = Structure . el "h1" . getContentString
 
 h2_ :: Content -> Structure
-h2_ = Structure . el "h2" . escape . getContentString
+h2_ = Structure . el "h2" . getContentString
 
 h3_ :: Content -> Structure
-h3_ = Structure . el "h3" . escape . getContentString
+h3_ = Structure . el "h3" . getContentString
 
 p_ :: Content -> Structure
-p_ = Structure . el "p" . escape . getContentString
+p_ = Structure . el "p" . getContentString
 
 ul_ :: [Structure] -> Structure
 ul_ = Structure . el "ul" . getHtmlList
@@ -71,7 +71,7 @@ el :: String -> String -> String
 el tag content = "<" <> tag <> ">" <> content <> "</" <> tag <> ">"
 
 elWithAttr :: String -> String -> String -> String
-elWithAttr tag attr content = "<" <> tag <> " " <> attr <> ">" <> content <> "</" <> tag <> ">"
+elWithAttr tag attr content = "<" <> tag <> " " <> attr <> ">" <> content <> "<" <> tag <> "/>"
 
 escape :: String -> String
 escape =

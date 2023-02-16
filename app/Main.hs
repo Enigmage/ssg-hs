@@ -1,6 +1,7 @@
 module Main (main) where
 
 import Lib qualified
+import Lib.Util qualified as Utils
 import OptParse qualified as Op
 import System.Directory (doesFileExist)
 import System.Exit (exitFailure)
@@ -10,7 +11,7 @@ import System.IO (Handle, IOMode (..), stdin, stdout, withFile)
 main :: IO ()
 main =
   Op.parse >>= \case
-    Op.ConvertDir input output -> putStrLn "not implemented yet"
+    Op.ConvertDir input output -> Lib.convertDirectory input output
     Op.ConvertSingle input output ->
       let withInputHandle :: (String -> Handle -> IO a) -> IO a
           withInputHandle action =
@@ -29,20 +30,9 @@ main =
                 exists <- doesFileExist file
                 shouldOpenFile <-
                   if exists
-                    then confirm
+                    then Utils.confirm "File already exists. Overwrite? y/n"
                     else pure True
                 if shouldOpenFile
                   then withFile file WriteMode action
                   else exitFailure
-       in withInputHandle (\title inp -> withOutputHandle $ Lib.processSingle title inp)
-
-confirm :: IO Bool
-confirm =
-  putStrLn "File already exists. Overwrite? y/n"
-    *> getLine
-    >>= \case
-      "y" -> pure True
-      "n" -> pure False
-      _ ->
-        putStrLn "Confirm by writing y or n"
-          *> confirm
+       in withInputHandle (\title inp -> withOutputHandle $ Lib.convertSingle title inp)

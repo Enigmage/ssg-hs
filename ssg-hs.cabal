@@ -43,6 +43,10 @@ library
         Lib.Html
           Lib.Html.Internal
         Lib.Markup
+        Lib.Util
+  other-modules:
+        Lib.Single
+        Lib.Directory
 
 executable ssghs
   import: common-settings
