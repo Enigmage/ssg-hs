@@ -7,11 +7,12 @@ module OptParse
 where
 
 import Data.Maybe (fromMaybe)
+import Lib.Env
 import Options.Applicative
 
 data Options
   = ConvertSingle SingleInput SingleOutput
-  | ConvertDir FilePath FilePath
+  | ConvertDir FilePath FilePath Env
   deriving (Show)
 
 data SingleInput
@@ -76,7 +77,7 @@ pSingleOption = ConvertSingle <$> singleInput <*> singleOutput
           )
 
 pDirectoryOption :: Parser Options
-pDirectoryOption = ConvertDir <$> inputDir <*> outputDir
+pDirectoryOption = ConvertDir <$> inputDir <*> outputDir <*> pEnv
   where
     inputDir =
       strOption
@@ -91,4 +92,26 @@ pDirectoryOption = ConvertDir <$> inputDir <*> outputDir
             <> short 'o'
             <> metavar "DIRECTORY"
             <> help "Output directory path"
+        )
+
+    pEnv = Env <$> pBlogName <*> pStyleSheet
+
+    pBlogName =
+      strOption
+        ( long "name"
+            <> short 'N'
+            <> metavar "STRING"
+            <> help "Blog Name"
+            <> value (eBlogName defaultEnv)
+            <> showDefault
+        )
+
+    pStyleSheet =
+      strOption
+        ( long "style"
+            <> short 'S'
+            <> metavar "FILE"
+            <> help "Stylesheet filepath"
+            <> value (eStylesheetPath defaultEnv)
+            <> showDefault
         )

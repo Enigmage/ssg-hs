@@ -35,6 +35,7 @@ library
       base
       , directory
       , filepath
+      , mtl
   hs-source-dirs:
       src
   exposed-modules:
@@ -44,6 +45,7 @@ library
           Lib.Html.Internal
         Lib.Markup
         Lib.Util
+        Lib.Env
   other-modules:
         Lib.Single
         Lib.Directory

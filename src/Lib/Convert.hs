@@ -1,10 +1,23 @@
 module Lib.Convert (markupToHtml, convertMarkup) where
 
+import Lib.Env (Env (..))
 import Lib.Html.Internal qualified as H
 import Lib.Markup qualified as M
+import Prelude hiding (head)
 
-markupToHtml :: H.Title -> M.Document -> H.Html
-markupToHtml title doc = H.html_ title (foldMap convertMarkup doc)
+markupToHtml :: Env -> H.Title -> M.Document -> H.Html
+markupToHtml env title doc =
+  let head =
+        H.title_ (eBlogName env <> " - " <> title)
+
+      article = foldMap convertMarkup doc
+
+      websiteTitle =
+        H.h1_ (H.link_ "index.html" $ H.txt_ $ eBlogName env)
+
+      body =
+        websiteTitle <> article
+   in H.html_ head body
 
 convertMarkup :: M.Structure -> H.Structure
 convertMarkup markup =
@@ -16,4 +29,3 @@ convertMarkup markup =
         M.H3 -> H.h3_ (H.txt_ txt)
     M.Paragraph txt -> H.p_ (H.txt_ txt)
     M.UnorderedList list -> H.ul_ (map H.Structure list)
-

@@ -1,8 +1,12 @@
 module Lib.Html
   ( Html,
     Structure,
+    Head,
     Title,
     Content,
+    title_,
+    stylesheet_,
+    meta_,
     txt_,
     link_,
     img_,

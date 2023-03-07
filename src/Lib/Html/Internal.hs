@@ -4,9 +4,17 @@ module Lib.Html.Internal where
 
 newtype Html = Html String
 
+newtype Head = Head String
+
 newtype Structure = Structure String
 
 newtype Content = Content String deriving (Show)
+
+instance Semigroup Head where
+  (<>) (Head h1) (Head h2) = Head (h1 <> h2)
+
+instance Monoid Head where
+  mempty = Head ""
 
 instance Semigroup Structure where
   (<>) x y = Structure $ getStructureContent x <> getStructureContent y
@@ -25,8 +33,18 @@ getContentString (Content x) = x
 render :: Html -> String
 render (Html x) = x
 
-html_ :: Title -> Structure -> Html
-html_ title content = Html . el "html" $ el "head" (el "title" $ escape title) <> el "body" (getStructureContent content)
+html_ :: Head -> Structure -> Html
+html_ (Head head) content = Html . el "html" $ el "head" head <> el "body" (getStructureContent content)
+
+title_ :: String -> Head
+title_ = Head . el "title" . escape
+
+stylesheet_ :: FilePath -> Head
+stylesheet_ path = Head $ "<link rel=\"stylesheet\" type=\"text/css\" href=\"" <> escape path <> "\">"
+
+meta_ :: String -> String -> Head
+meta_ name content =
+  Head $ "<meta name=\"" <> escape name <> "\" content=\"" <> escape content <> "\">"
 
 h1_ :: Content -> Structure
 h1_ = Structure . el "h1" . getContentString

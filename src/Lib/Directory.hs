@@ -1,11 +1,13 @@
-module Lib.Directory (buildIndex, convertDirectory) where
+module Lib.Directory (buildIndex, convertDirectory, Env (..)) where
 
 import Control.Exception (Exception (displayException), SomeException (..), catch)
-import Control.Monad (void, when)
+-- import Control.Monad (void, when)
+import Control.Monad.Reader
 import Data.Bifunctor qualified
 import Data.Functor (($>))
 import Data.List (partition)
 import Lib.Convert (convertMarkup, markupToHtml)
+import Lib.Env (Env (..))
 import Lib.Html.Internal qualified as H
 import Lib.Markup qualified as M
 import Lib.Util qualified as Utils
@@ -20,17 +22,18 @@ data DirContents = DirContents
     filesToCopy :: [FilePath]
   }
 
-convertDirectory :: FilePath -> FilePath -> IO ()
-convertDirectory inputDir outputDir = do
+convertDirectory :: Env -> FilePath -> FilePath -> IO ()
+convertDirectory env inputDir outputDir = do
   DirContents markupFiles staticFiles <- getDirFilesAndContent inputDir
   createDirOrExit outputDir
-  let htmlFiles = markupToRenderedHtml markupFiles
+  let htmlFiles = runReader (markupToRenderedHtml markupFiles) env
   copyFiles outputDir staticFiles
   writeFiles outputDir htmlFiles
   putStrLn "Done"
 
-buildIndex :: [(FilePath, M.Document)] -> H.Html
-buildIndex files =
+buildIndex :: [(FilePath, M.Document)] -> Reader Env H.Html
+buildIndex files = do
+  env <- ask
   let previews =
         map
           ( \(file, doc) ->
@@ -42,12 +45,13 @@ buildIndex files =
                 _ -> H.h3_ (H.link_ file (H.txt_ file))
           )
           files
-   in H.html_
-        "Blog"
-        ( H.h1_ (H.link_ "index.html" (H.txt_ "Blog"))
-            <> H.h2_ (H.txt_ "Posts")
-            <> mconcat previews
-        )
+  pure $
+    H.html_
+      (H.title_ (eBlogName env) <> H.stylesheet_ (eStylesheetPath env))
+      ( H.h1_ (H.link_ "index.html" (H.txt_ "Blog"))
+          <> H.h2_ (H.txt_ "Posts")
+          <> mconcat previews
+      )
 
 getDirFilesAndContent :: FilePath -> IO DirContents
 getDirFilesAndContent inputDir = do
@@ -79,7 +83,7 @@ filterAndReportFailures =
     \(fname, fc) ->
       case fc of
         Right content -> pure [(fname, content)]
-        Left err -> hPutStrLn stderr err $> [] -- $> perform error-report effect then lift [] to IO (f a -> b -> f b)
+        Left err -> hPutStrLn stderr err $> [] -- \$> perform error-report effect then lift [] to IO (f a -> b -> f b)
 
 copyFiles :: FilePath -> [FilePath] -> IO ()
 copyFiles outDir files = void $ applyIoOnList copyFromTo files >>= filterAndReportFailures
@@ -91,18 +95,20 @@ writeFiles outDir files = void $ applyIoOnList writeFileContent files >>= filter
   where
     writeFileContent (file, content) = writeFile (outDir </> file) content
 
-markupToRenderedHtml :: [(FilePath, String)] -> [(FilePath, String)]
-markupToRenderedHtml files = map (Data.Bifunctor.second H.render) (index : htmlFiles)
-  where
-    parsedFiles = map parseFileContent files
-    htmlFiles = map convertFileContent parsedFiles
-    index = ("index.html", buildIndex parsedFiles)
+markupToRenderedHtml :: [(FilePath, String)] -> Reader Env [(FilePath, String)]
+markupToRenderedHtml files = do
+  let parsedFiles = map parseFileContent files
+  htmlFiles <- traverse convertFileContent parsedFiles
+  index <- (,) "index.html" <$> buildIndex parsedFiles
+  pure $ map (Data.Bifunctor.second H.render) (index : htmlFiles)
 
 parseFileContent :: (FilePath, String) -> (FilePath, M.Document)
 parseFileContent (fPath, fContent) = (takeBaseName fPath <.> "html", M.parse fContent)
 
-convertFileContent :: (FilePath, M.Document) -> (FilePath, H.Html)
-convertFileContent (fPath, fContent) = (fPath, markupToHtml (takeBaseName fPath) fContent)
+convertFileContent :: (FilePath, M.Document) -> Reader Env (FilePath, H.Html)
+convertFileContent (fPath, fContent) = do
+  env <- ask
+  pure (fPath, markupToHtml env (takeBaseName fPath) fContent)
 
 createDirOrExit :: FilePath -> IO ()
 createDirOrExit fPath =

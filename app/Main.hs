@@ -11,7 +11,7 @@ import System.IO (Handle, IOMode (..), stdin, stdout, withFile)
 main :: IO ()
 main =
   Op.parse >>= \case
-    Op.ConvertDir input output -> Lib.convertDirectory input output
+    Op.ConvertDir input output env -> Lib.convertDirectory env input output
     Op.ConvertSingle input output -> withInputHandle (\title inp -> withOutputHandle $ Lib.convertSingle title inp)
       where
         withInputHandle :: (String -> Handle -> IO a) -> IO a
