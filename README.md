@@ -25,8 +25,8 @@ $ ssghs conver-dir -i example/ -o dist/
 Will convert each file in the example markdown directory to HTML and will also add an
 index.html file.
 
-## Using stack
+## Without Installing(using stack)
 
 ```sh
-$ stack exec ssghs -- convert-dir -i example -o dist                                                              dev/ssg-hs main
+$ stack exec ssghs -- convert-dir -i example -o dist
 ```
