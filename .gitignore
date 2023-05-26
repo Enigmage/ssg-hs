@@ -1,4 +1,5 @@
 *.html
+!doc/html/ssg-hs/*.html
 dist
 dist-newstyle
 .stack-work
