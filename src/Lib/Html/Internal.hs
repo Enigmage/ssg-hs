@@ -34,7 +34,7 @@ render :: Html -> String
 render (Html x) = x
 
 html_ :: Head -> Structure -> Html
-html_ (Head head) content = Html . el "html" $ el "head" head <> el "body" (getStructureContent content)
+html_ (Head header) content = Html . el "html" $ el "head" header <> el "body" (getStructureContent content)
 
 title_ :: String -> Head
 title_ = Head . el "title" . escape
