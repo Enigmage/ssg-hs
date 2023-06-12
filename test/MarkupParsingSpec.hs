@@ -61,6 +61,10 @@ simple = do
       shouldBe
         (parse "# Yolo")
         [Heading H1 "Yolo"]
+    it "Heading 2" $
+      shouldBe
+        (parse "## Yolo 2")
+        [Heading H2 "Yolo 2"]
     it "List" $
       shouldBe
         (parse "- this is a list point")
